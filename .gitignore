@@ -1,0 +1,18 @@
+# Maven
+**/target/
+
+# OS junk
+.DS_Store
+
+# Logs
+*.log
+**/run.log
+
+# DO NOT commit packaged outputs
+desktop-fx/packaging/mac/EmbassyFX.app/
+desktop-fx/packaging/windows/EmbassyFX/
+desktop-fx/packaging/windows/EmbassyFX_win_portable.zip
+
+# Keep icons used by jpackage
+!desktop-fx/packaging/macos/AppIcon.icns
+!desktop-fx/packaging/windows/AppIcon.ico

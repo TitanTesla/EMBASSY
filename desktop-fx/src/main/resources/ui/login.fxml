@@ -1,0 +1,23 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Pos?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="ui.LoginController">
+  <children>
+    <VBox spacing="12" alignment="CENTER" maxWidth="420">
+      <padding>
+        <Insets top="40" right="40" bottom="40" left="40"/>
+      </padding>
+
+      <Label text="Embassy Inventory Login" styleClass="title"/>
+
+      <TextField fx:id="userField" promptText="Username" prefWidth="340"/>
+      <PasswordField fx:id="passField" promptText="Password" prefWidth="340"/>
+
+      <Button text="Login" onAction="#handleLogin" defaultButton="true" maxWidth="Infinity"/>
+
+      <Label fx:id="msg" style="-fx-text-fill: #d33;"/>
+    </VBox>
+  </children>
+</StackPane>

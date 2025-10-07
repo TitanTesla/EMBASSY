@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="ui.MainController">
+    <top>
+        <BorderPane>
+            <left>
+                <ToolBar>
+                    <Label text="Embassy Inventory"/>
+                </ToolBar>
+            </left>
+            <right>
+                <Label fx:id="analyticsLabel"/>
+            </right>
+        </BorderPane>
+    </top>
+
+    <center>
+        <TabPane fx:id="tabs">
+            <!-- INVENTORY TAB -->
+            <Tab text="Inventory" closable="false">
+                <BorderPane>
+                    <top>
+                        <ToolBar>
+                            <TextField fx:id="searchField" promptText="Search by SKU or Name"/>
+                            <ChoiceBox fx:id="sortChoice"/>
+                            <Separator/>
+                            <Button text="Add" onAction="#addProduct"/>
+                            <Button text="Update" onAction="#updateProduct"/>
+                            <Button text="Delete" onAction="#deleteProduct"/>
+                            <Button text="Receive" onAction="#receiveStock"/>
+                            <Button text="Issue" onAction="#issueStock"/>
+                            <Button text="Refresh" onAction="#refreshInventory"/>
+                        </ToolBar>
+                    </top>
+                    <center>
+                        <TableView fx:id="inventoryTable">
+                            <columns>
+                                <TableColumn fx:id="colSku" text="SKU" prefWidth="120"/>
+                                <TableColumn fx:id="colName" text="Name" prefWidth="220"/>
+                                <TableColumn fx:id="colQty" text="Qty" prefWidth="70"/>
+                                <TableColumn fx:id="colPrice" text="Price" prefWidth="100"/>
+                                <TableColumn fx:id="colTotalPrice" text="Total Price" prefWidth="120"/>
+                                <TableColumn fx:id="colUnit" text="Unit" prefWidth="90"/>
+                                <TableColumn fx:id="colCat" text="Category" prefWidth="120"/>
+                                <TableColumn fx:id="colCreated" text="DateTime" prefWidth="160"/>
+                            </columns>
+                        </TableView>
+                    </center>
+                </BorderPane>
+            </Tab>
+
+            <!-- OUTFLOW TAB -->
+            <Tab text="Outflow" closable="false">
+                <BorderPane>
+                    <center>
+                        <TableView fx:id="outflowTable">
+                            <columns>
+                                <TableColumn fx:id="ofDate" text="DateTime" prefWidth="160"/>
+                                <TableColumn fx:id="ofUser" text="User" prefWidth="100"/>
+                                <TableColumn fx:id="ofSku" text="SKU" prefWidth="120"/>
+                                <TableColumn fx:id="ofName" text="Product" prefWidth="200"/>
+                                <TableColumn fx:id="ofUnit" text="Unit" prefWidth="80"/>
+                                <TableColumn fx:id="ofQty" text="Qty" prefWidth="70"/>
+                                <TableColumn fx:id="ofPrice" text="Price" prefWidth="100"/>
+                                <TableColumn fx:id="ofTotalPrice" text="Total Price" prefWidth="120"/>
+                                <TableColumn fx:id="ofCat" text="Category" prefWidth="120"/>
+                            </columns>
+                        </TableView>
+                    </center>
+                </BorderPane>
+            </Tab>
+
+            <!-- EXPORT TAB -->
+            <Tab text="Export" closable="false">
+                <VBox spacing="12" alignment="CENTER">
+                    <Button text="Export Inventory CSV" onAction="#exportInventory"/>
+                    <Button text="Export Outflow CSV" onAction="#exportOutflow"/>
+                    <Label fx:id="exportMsg"/>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+</BorderPane>

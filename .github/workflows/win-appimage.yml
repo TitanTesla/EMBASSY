@@ -3,15 +3,17 @@ name: Windows Portable AppImage
 on:
   push:
     paths:
+      - 'desktop-fx/**'
       - '.github/workflows/win-appimage.yml'
-      - 'pom.xml'
-      - 'src/**'
-      - 'packaging/windows/**'
   workflow_dispatch: {}
 
 jobs:
   build-win:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: desktop-fx
 
     steps:
       - name: Checkout
@@ -28,7 +30,6 @@ jobs:
         run: mvn -q -DskipTests package
 
       - name: Compute JAR name
-        shell: pwsh
         run: |
           $jar = Get-ChildItem -Path target -Filter 'embassyfx-*.jar' |
             Where-Object { $_.Name -notmatch 'sources|javadoc' } |
@@ -38,26 +39,23 @@ jobs:
           Write-Host "Using JAR: $($jar.Name)"
 
       - name: Stage runtime deps (JAR + dependencies)
-        shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path target/deps | Out-Null
-          Copy-Item "target/${{ env.JAR_NAME }}" target/deps/
+          New-Item -ItemType Directory -Force -Path target\deps | Out-Null
+          Copy-Item "target\${{ env.JAR_NAME }}" target\deps\
           mvn -q dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/deps
 
       - name: Fetch JavaFX (Windows) jars
-        shell: pwsh
+        shell: cmd
         run: |
-          $JfxVer = '22.0.2'
-          $mods = @('base','graphics','controls','fxml')
-          foreach ($m in $mods) {
-            mvn -q dependency:get -Dartifact="org.openjfx:javafx-$m:$JfxVer:win"
-            $jar = Join-Path $env:USERPROFILE ".m2\repository\org\openjfx\javafx-$m\$JfxVer\javafx-$m-$JfxVer-win.jar"
-            if (-not (Test-Path $jar)) { throw "Missing JavaFX jar: $jar" }
-            Copy-Item $jar target/deps/
-          }
+          for %%M in (base graphics controls fxml) do (
+            mvn -q dependency:get -Dartifact=org.openjfx:javafx-%%M:22.0.2:win
+          )
+          copy %USERPROFILE%\.m2\repository\org\openjfx\javafx-base\22.0.2\javafx-base-22.0.2-win.jar target\deps\
+          copy %USERPROFILE%\.m2\repository\org\openjfx\javafx-graphics\22.0.2\javafx-graphics-22.0.2-win.jar target\deps\
+          copy %USERPROFILE%\.m2\repository\org\openjfx\javafx-controls\22.0.2\javafx-controls-22.0.2-win.jar target\deps\
+          copy %USERPROFILE%\.m2\repository\org\openjfx\javafx-fxml\22.0.2\javafx-fxml-22.0.2-win.jar target\deps\
 
       - name: jpackage (Windows app-image)
-        shell: pwsh
         run: >
           jpackage
           --type app-image
@@ -68,10 +66,9 @@ jobs:
           --main-class app.Main
           --app-version 1.0.0
           --icon packaging/windows/AppIcon.ico
-          --java-options '--module-path %APPDIR%\app --add-modules=javafx.controls,javafx.fxml,javafx.graphics,javafx.base'
+          --java-options "--module-path %APPDIR%\app --add-modules=javafx.controls,javafx.fxml,javafx.graphics,javafx.base"
 
       - name: Zip portable folder
-        shell: pwsh
         run: |
           $src = 'packaging/windows/EmbassyFX/*'
           $dst = 'packaging/windows/EmbassyFX_win_portable.zip'
@@ -82,4 +79,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: EmbassyFX_win_portable
-          path: packaging/windows/EmbassyFX_win_portable.zip
+          path: desktop-fx/packaging/windows/EmbassyFX_win_portable.zip

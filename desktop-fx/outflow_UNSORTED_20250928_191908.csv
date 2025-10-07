@@ -1,0 +1,4 @@
+DateTime,User,SKU,Product,Unit,Qty,Price,TotalPrice,Category
+2025-09-28 11:47,"finance","SHELF-E","NoteBooks","EACH",7,"0.00","0.00",""
+2025-09-28 11:47,"finance","SHELF-B","tissue","ROLL",3,"0.00","0.00",""
+2025-09-28 11:47,"finance","SHELF-C","USB-cable","EACH",1,"0.00","0.00",""

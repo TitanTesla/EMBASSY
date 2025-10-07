@@ -1,0 +1,6 @@
+DateTime,SKU,Product,Unit,Qty,Price,TotalPrice,Category
+2025-09-28 06:58,"SHELF-A","pens","BOX",4,"10.00","40.00","STATIONERY"
+2025-09-28 06:59,"SHELF-B","tissue","ROLL",7,"1.00","7.00","CLEANING"
+2025-09-28 07:00,"SHELF-C","USB-cable","EACH",2,"50.00","100.00","ELECTRONICS"
+2025-09-28 07:01,"SHELF-D","coffee","PACK",5,"13.70","68.50","FOOD"
+2025-09-28 07:02,"SHELF-E","NoteBooks","EACH",3,"6.70","20.10","STATIONERY"
