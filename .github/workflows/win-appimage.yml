@@ -4,7 +4,9 @@ on:
   push:
     paths:
       - 'desktop-fx/**'
+      - 'packaging/windows/**'
       - '.github/workflows/win-appimage.yml'
+      - 'pom.xml'
   workflow_dispatch: {}
 
 jobs:
