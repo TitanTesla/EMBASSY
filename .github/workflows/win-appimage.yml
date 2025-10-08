@@ -15,7 +15,7 @@ jobs:
     defaults:
       run:
         shell: pwsh
-        working-directory: desktop-fx   # your Maven module folder
+        working-directory: desktop-fx
 
     steps:
       - name: Checkout
@@ -47,7 +47,7 @@ jobs:
           Copy-Item "target\${{ env.JAR_NAME }}" target\deps\
           mvn -q dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/deps
 
-      # Fetch JavaFX jars for Windows; use cmd so %USERPROFILE% expands correctly
+      # Fetch JavaFX jars for Windows into app folder
       - name: Fetch JavaFX (Windows) jars
         shell: cmd
         run: |
@@ -56,14 +56,7 @@ jobs:
             copy "%USERPROFILE%\.m2\repository\org\openjfx\javafx-%%M\22.0.2\javafx-%%M-22.0.2-win.jar" target\deps\
           )
 
-      # NEW: build a private runtime that will contain runtime\bin\java.exe
-      - name: Build minimal runtime with jlink
-        run: |
-          $mods = 'java.base,java.desktop,java.logging,java.sql,jdk.unsupported,jdk.crypto.ec'
-          jlink --add-modules $mods `
-                --output target\runtime `
-                --strip-debug --no-header-files --no-man-pages --compress=2
-
+      # Build app-image and EMBED a runtime that includes full Java SE (so java.scripting is present)
       - name: jpackage (Windows app-image)
         run: >
           jpackage
@@ -73,20 +66,10 @@ jobs:
           --input target\deps
           --main-jar ${{ env.JAR_NAME }}
           --main-class app.Main
-          --runtime-image target\runtime
           --app-version 1.0.0
           --icon packaging/windows/AppIcon.ico
+          --add-modules java.se,jdk.unsupported
           --java-options "--module-path %APPDIR%\app --add-modules=javafx.controls,javafx.fxml,javafx.graphics,javafx.base"
-          # add the next flag temporarily if you want a console for debugging:
-          # --win-console
-
-      # NEW: hard fail if java.exe isn’t bundled
-      - name: Verify java.exe present
-        run: |
-          if (-not (Test-Path 'packaging/windows/EmbassyFX/runtime/bin/java.exe')) {
-            throw "java.exe missing in app-image"
-          }
-          Get-ChildItem -Recurse -Filter java.exe packaging/windows/EmbassyFX | Select-Object FullName
 
       - name: Zip portable folder
         run: |
