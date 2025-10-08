@@ -4,9 +4,9 @@ on:
   push:
     paths:
       - 'desktop-fx/**'
-      - 'packaging/windows/**'
+      - 'desktop-fx/pom.xml'
       - '.github/workflows/win-appimage.yml'
-      - 'pom.xml'
+      - 'packaging/windows/**'
   workflow_dispatch: {}
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
     defaults:
       run:
         shell: pwsh
-        working-directory: desktop-fx
+        working-directory: desktop-fx   # your Maven module folder
 
     steps:
       - name: Checkout
@@ -47,15 +47,14 @@ jobs:
           Copy-Item "target\${{ env.JAR_NAME }}" target\deps\
           mvn -q dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/deps
 
+      # IMPORTANT: use cmd here so $ doesn't get mangled by PowerShell
       - name: Fetch JavaFX (Windows) jars
-        shell: pwsh
+        shell: cmd
         run: |
-          $mods = @('base','graphics','controls','fxml')
-          foreach ($m in $mods) {
-            mvn -q dependency:get -Dartifact=org.openjfx:javafx-$m:22.0.2:jar:win
-            $src = "$env:USERPROFILE\.m2\repository\org\openjfx\javafx-$m\22.0.2\javafx-$m-22.0.2-win.jar"
-            Copy-Item $src target\deps\
-          }
+          for %%M in (base graphics controls fxml) do (
+            mvn -q dependency:get -Dartifact=org.openjfx:javafx-%%M:22.0.2:jar:win
+            copy "%USERPROFILE%\.m2\repository\org\openjfx\javafx-%%M\22.0.2\javafx-%%M-22.0.2-win.jar" target\deps\
+          )
 
       - name: jpackage (Windows app-image)
         run: >
