@@ -48,15 +48,14 @@ jobs:
           mvn -q dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/deps
 
       - name: Fetch JavaFX (Windows) jars
-        shell: cmd
+        shell: pwsh
         run: |
-          for %%M in (base graphics controls fxml) do (
-            mvn -q dependency:get -Dartifact=org.openjfx:javafx-%%M:22.0.2:win
-          )
-          copy %USERPROFILE%\.m2\repository\org\openjfx\javafx-base\22.0.2\javafx-base-22.0.2-win.jar target\deps\
-          copy %USERPROFILE%\.m2\repository\org\openjfx\javafx-graphics\22.0.2\javafx-graphics-22.0.2-win.jar target\deps\
-          copy %USERPROFILE%\.m2\repository\org\openjfx\javafx-controls\22.0.2\javafx-controls-22.0.2-win.jar target\deps\
-          copy %USERPROFILE%\.m2\repository\org\openjfx\javafx-fxml\22.0.2\javafx-fxml-22.0.2-win.jar target\deps\
+          $mods = @('base','graphics','controls','fxml')
+          foreach ($m in $mods) {
+            mvn -q dependency:get -Dartifact=org.openjfx:javafx-$m:22.0.2:jar:win
+            $src = "$env:USERPROFILE\.m2\repository\org\openjfx\javafx-$m\22.0.2\javafx-$m-22.0.2-win.jar"
+            Copy-Item $src target\deps\
+          }
 
       - name: jpackage (Windows app-image)
         run: >
