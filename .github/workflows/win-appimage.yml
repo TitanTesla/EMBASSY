@@ -27,6 +27,7 @@ jobs:
           distribution: temurin
           java-version: '22'
           cache: maven
+          cache-dependency-path: desktop-fx/pom.xml
 
       - name: Build (skip tests)
         run: mvn -q -DskipTests package
