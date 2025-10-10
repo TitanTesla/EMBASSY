@@ -5,8 +5,8 @@ on:
     paths:
       - 'desktop-fx/**'
       - 'desktop-fx/pom.xml'
+      - 'desktop-fx/packaging/windows/**'
       - '.github/workflows/win-appimage.yml'
-      - 'packaging/windows/**'
   workflow_dispatch: {}
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
     defaults:
       run:
         shell: pwsh
-        working-directory: desktop-fx
+        working-directory: desktop-fx   # Maven module with your JavaFX app
 
     steps:
       - name: Checkout
@@ -47,7 +47,7 @@ jobs:
           Copy-Item "target\${{ env.JAR_NAME }}" target\deps\
           mvn -q dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/deps
 
-      # Fetch JavaFX jars for Windows into app folder
+      # Fetch JavaFX jars for Windows into target\deps (use CMD so %%M expands)
       - name: Fetch JavaFX (Windows) jars
         shell: cmd
         run: |
@@ -56,7 +56,15 @@ jobs:
             copy "%USERPROFILE%\.m2\repository\org\openjfx\javafx-%%M\22.0.2\javafx-%%M-22.0.2-win.jar" target\deps\
           )
 
-      # Build app-image and EMBED a runtime that includes full Java SE (so java.scripting is present)
+      # ⬇️ NEW: build a private JRE so app-image contains runtime\bin\java.exe
+      - name: Create custom runtime (jlink)
+        run: >
+          jlink
+          --add-modules java.se,jdk.unsupported,jdk.charsets
+          --strip-debug --no-header-files --no-man-pages
+          --output runtime
+
+      # Use that runtime in jpackage so the artifact is fully portable
       - name: jpackage (Windows app-image)
         run: >
           jpackage
@@ -66,9 +74,9 @@ jobs:
           --input target\deps
           --main-jar ${{ env.JAR_NAME }}
           --main-class app.Main
+          --runtime-image runtime
           --app-version 1.0.0
           --icon packaging/windows/AppIcon.ico
-          --add-modules java.se,jdk.unsupported
           --java-options "--module-path %APPDIR%\app --add-modules=javafx.controls,javafx.fxml,javafx.graphics,javafx.base"
 
       - name: Zip portable folder
