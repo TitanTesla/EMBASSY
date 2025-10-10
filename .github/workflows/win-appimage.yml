@@ -56,7 +56,7 @@ jobs:
             copy "%USERPROFILE%\.m2\repository\org\openjfx\javafx-%%M\22.0.2\javafx-%%M-22.0.2-win.jar" target\deps\
           )
 
-      # Build a private JRE that includes everything JavaFX/FXML needs
+      # Build a private JRE(Java Runtime Environment) that includes everything JavaFX/FXML needs
       - name: Create custom runtime (jlink)
         run: >
           jlink
