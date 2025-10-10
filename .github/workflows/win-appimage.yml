@@ -60,7 +60,7 @@ jobs:
       - name: Create custom runtime (jlink)
         run: >
           jlink
-          --add-modules java.se,jdk.unsupported,jdk.charsets
+          --add-modules java.se,java.scripting,jdk.unsupported,jdk.charsets
           --strip-debug --no-header-files --no-man-pages
           --output runtime
 
