@@ -15,7 +15,7 @@ jobs:
     defaults:
       run:
         shell: pwsh
-        working-directory: desktop-fx   # Maven module with your JavaFX app
+        working-directory: desktop-fx
 
     steps:
       - name: Checkout
@@ -47,7 +47,7 @@ jobs:
           Copy-Item "target\${{ env.JAR_NAME }}" target\deps\
           mvn -q dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/deps
 
-      # Fetch JavaFX jars for Windows into target\deps (use CMD so %%M expands)
+      # Fetch JavaFX Windows jars into target\deps
       - name: Fetch JavaFX (Windows) jars
         shell: cmd
         run: |
@@ -56,7 +56,7 @@ jobs:
             copy "%USERPROFILE%\.m2\repository\org\openjfx\javafx-%%M\22.0.2\javafx-%%M-22.0.2-win.jar" target\deps\
           )
 
-      # ⬇️ NEW: build a private JRE so app-image contains runtime\bin\java.exe
+      # Build a private JRE that includes everything JavaFX/FXML needs
       - name: Create custom runtime (jlink)
         run: >
           jlink
@@ -64,7 +64,7 @@ jobs:
           --strip-debug --no-header-files --no-man-pages
           --output runtime
 
-      # Use that runtime in jpackage so the artifact is fully portable
+      # Package with that runtime; enable console to show errors if launch fails
       - name: jpackage (Windows app-image)
         run: >
           jpackage
@@ -77,8 +77,25 @@ jobs:
           --runtime-image runtime
           --app-version 1.0.0
           --icon packaging/windows/AppIcon.ico
-          --java-options "--module-path %APPDIR%\app --add-modules=javafx.controls,javafx.fxml,javafx.graphics,javafx.base"
+          --win-console
+          --java-options "--module-path %APPDIR% --add-modules=javafx.controls,javafx.fxml,javafx.graphics,javafx.base"
 
+      # Overwrite the launcher CFG with the known-good content (UTF-8 w/o BOM)
+      - name: Normalize launcher CFG
+        run: |
+          $cfg = @"
+          [Application]
+          app.mainclass=app.Main
+          app.classpath=$APPDIR\${{ env.JAR_NAME }};$APPDIR\sqlite-jdbc-3.46.0.0.jar;$APPDIR\slf4j-api-1.7.36.jar
+
+          [JavaOptions]
+          java-options=--module-path
+          java-options=$APPDIR
+          java-options=--add-modules=javafx.controls,javafx.fxml,javafx.graphics,javafx.base
+          "@
+          $cfg | Set-Content -Encoding utf8NoBOM "packaging/windows/EmbassyFX/app/EmbassyFX.cfg"
+
+      # Zip the portable folder
       - name: Zip portable folder
         run: |
           $src = 'packaging/windows/EmbassyFX/*'
